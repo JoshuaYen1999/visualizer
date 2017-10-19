@@ -1,0 +1,62 @@
+<h1>Visualizer for the Functional Map of the World Challenge</h1>
+
+The purpose of the visualizer application is to let you view object bounding boxes overlaid on satellite images, compare truth to solution annotations, and calculate your solution's score.<br/>
+
+Download the <a href="http://www.topcoder.com/contest/problem/FunctionalMap/visualizer-1.0.zip">visualizer package</a> and unpack it anywhere on your system.<br/>
+Open a command window in the directory where you unzipped the package and execute
+<pre>
+java -Xmx2g -jar visualizer.jar 
+     -data-dir &lt;data_directory&gt; 
+     -solution &lt;solution_file&gt; 
+</pre>
+<i>(The above is a single line command, line breaks are only for readability. The -Xmx2g parameter gives 2GB RAM available for Java. If you have more RAM and you work with lots of data then it is recommended to set this value higher.)</i><br/><br/>
+
+This assumes that you have Java (at least v1.7) installed and it is available on your path. The meaning of the above parameters are the following:
+<ul>
+	<li>-data-dir : specifies the base directory of the data files, i.e. the satellite images and meta data files. <b>Note that the tool supports only the images of the <tt>fmow-rgb</tt> data set, i.e. RGB images in .jpg format.</b></li>
+	<li>-solution : your solution file, see ./data/solution.txt for an example. This parameter is optional.</li>
+</ul>
+All file and directory parameters can be relative or absolute paths. <br/><br/>
+Other optional parameters you may use:
+<ul>
+	<li>-w &lt;width&gt; : width of the tool's screen. Defaults to 1500.</li>
+	<li>-no-gui : if present then no GUI will be shown, the application just scores the supplied solution file in command line mode.</li>
+	<li>-no-ms : if present then the tool will use the xxx_rgb.jpg and xxx_rgb.json files. By default the tool uses the xxx_msrgb.jpg and xxx_msrgb.json files. Note that some of the xxx_rgb.jpg files are large and opening them will take longer.</li>
+	<li>-max-per-cat &lt;N&gt; : the tool uses at most N scenes per object category. This works only if the data files are arranged in the way training data is present in the challenge's data set, where folder names correspond to object labels. By default all images are used.</li>
+	<li>-scene-filter : a regular expression to narrow the list of scenes to be used. E.g. a filter like <tt>crop_field_[89]</tt> will make the tool load only those scenes that have 'crop_field_8' or 'crop_field_9' in their name, like 'crop_field_876'. By default this filter is empty, all images are used.</li>
+	<li>-toc : if present then a toc.txt file will be created in the supplied base directory (-data-dir). When the tool runs the next time, scenes will be loaded from this TOC file, which will make the startup time much faster. When this option is present then all other options are ignored with the exception of -data-dir and -no-ms. No GUI is shown and no scoring is performed.</li>
+</ul>
+
+<p><b>Examples</b></p>
+This command runs the tool with the small set of images that come pre-packaged with it:
+<pre>
+java -jar visualizer.jar -data-dir ./data/ -solution solution.txt
+</pre>
+
+This command will show the fmow-rgb training data set, using a maximum of 5 bounding boxes per category:
+<pre>
+java -jar visualizer.jar -data-dir c:/fmow/data/fmow-rgb/train -max-per-cat 5
+</pre>
+This assumes that you have already downloaded the training data from the fmow-rgb AWS bucket or torrent (see the problem statement for details) into a similar directory structure as it is in the bucket.<br/><br/>
+
+This command creates a TOC file for the pre-packaged sample data set.
+<pre>
+java -jar visualizer.jar -data-dir ./data/ -toc
+</pre>
+ 
+<h3>Operations</h3>
+Image selection works by clicking on lines containing an image name in the output log window. Temporal views of the same scene are rolled up into a single line, so e.g. if a scene with ID=airport_0 has three different images taken at different times (with temporal IDs 0, 1 and 4 (note they are not necessarily continuous)) then the corresponding line will show:<br/>
+<pre>   airport_0 _0 _1 _4</pre>
+Clicking at _4 will open image with ID=airport_0_4.<br/>
+
+You can zoom in/out within the image view by the mouse wheel, and pan the view by dragging.<br/>
+
+If truth annotations are present in the meta data files and also a solution file is specified then solution and truth are compared automatically, scores are displayed in the log window and also in the command line. Images that contain error will be marked in the output log window by a '*'.<br/>
+
+<h3>Recommended work flow</h3>
+<ul>
+	<li>Download the fmow-rgb data set or a subset of it.</li>
+	<li>Run the tool once in -toc mode to create a toc.txt file in the base directory of the data set. (Note that the tool can work without a TOC file but if you have lots of data then you can significantly reduce launch time by creating one.)</li>
+	<li>Use the tool with the -scene-filter and/or -max-per-cat parameters to view a subset of the data, optionally specifying your solution file as well for scoring.</li>
+	<li>If your data changes, always recreate the TOC file.</li>
+</ul>
